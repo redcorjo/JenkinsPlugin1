@@ -13,4 +13,8 @@
     <f:entry title="URL" field="url">
         <f:textbox />
       </f:entry>
+      <f:entry title="Headers" field="headers"
+      description='List all headers under json style like { "param1": "value1", "param2": "value2" } '>
+              <f:textbox />
+            </f:entry>
 </j:jelly>

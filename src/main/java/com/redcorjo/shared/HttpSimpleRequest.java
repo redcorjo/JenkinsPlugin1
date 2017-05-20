@@ -1,13 +1,16 @@
 package com.redcorjo.shared;
 
+import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Iterator;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -21,8 +24,12 @@ public class HttpSimpleRequest {
 
     private String url;
     private String result;
+    private String headers;
     private JSONObject resultjson;
     private int code;
+    private String proxyhost;
+    private int proxyport;
+    private String noProxyHost;
 
     public HttpSimpleRequest(){
         super();
@@ -30,6 +37,18 @@ public class HttpSimpleRequest {
 
     public HttpSimpleRequest(String url){
         this.url = url;
+    }
+
+    public void setProxyhost(String proxyhost) {
+        this.proxyhost = proxyhost;
+    }
+
+    public void setProxyport(int proxyport) {
+        this.proxyport = proxyport;
+    }
+
+    public void setNoProxyHost(String noProxyHost) {
+        this.noProxyHost = noProxyHost;
     }
 
     public JSONObject getResultjson() {
@@ -56,13 +75,34 @@ public class HttpSimpleRequest {
         this.url = url;
     }
 
+    public void setHeaders(String headers) {
+        this.headers = headers;
+    }
+
+
     public String myRequest() throws IOException{
 
         HttpClient client = HttpClientBuilder.create().build();
         HttpGet request = new HttpGet(url);
 
+        if (proxyhost != null) {
+            HttpHost proxy = new HttpHost(proxyhost, proxyport, "http");
+            RequestConfig config = RequestConfig.custom().setProxy(proxy).build();
+            request.setConfig(config);
+            System.out.println("Using proxy: " + proxyhost + ":" + proxyport);
+        }
+
         // add request header
         request.addHeader("User-Agent", USER_AGENT);
+        JSONObject myheaders = new JSONObject(headers);
+        Iterator<?> keys = myheaders.keys();
+        while (keys.hasNext()){
+            String myheader = (String)keys.next();
+            String myvalue = myheaders.getString(myheader);
+            request.addHeader(myheader, myvalue);
+            System.out.println("Header "+myheader+":"+myvalue);
+        }
+
         HttpResponse response = client.execute(request);
 
 

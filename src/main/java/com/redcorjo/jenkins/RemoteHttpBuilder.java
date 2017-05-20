@@ -1,4 +1,5 @@
 package com.redcorjo.jenkins;
+
 import hudson.Launcher;
 import hudson.Extension;
 import hudson.FilePath;
@@ -8,6 +9,7 @@ import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.tasks.Builder;
 import hudson.tasks.BuildStepDescriptor;
+import jenkins.model.Jenkins;
 import jenkins.tasks.SimpleBuildStep;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -38,15 +40,15 @@ import com.redcorjo.shared.HttpSimpleRequest;
 public class RemoteHttpBuilder extends Builder implements SimpleBuildStep {
 
     private final String name;
-    private final String password;
+    private final String headers;
     private final String url;
 
     // Fields in config.jelly must match the parameter names in the "DataBoundConstructor"
     @DataBoundConstructor
-    public RemoteHttpBuilder(String name, String password, String url) {
+    public RemoteHttpBuilder(String name, String headers, String url) {
 
         this.name = name;
-        this.password = password;
+        this.headers = headers;
         this.url = url;
     }
 
@@ -57,7 +59,7 @@ public class RemoteHttpBuilder extends Builder implements SimpleBuildStep {
         return name;
     }
 
-    public String getPassword() {return password; }
+    public String getHeaders() {return headers; }
 
     public String getURL() {return url; }
 
@@ -74,13 +76,26 @@ public class RemoteHttpBuilder extends Builder implements SimpleBuildStep {
             return;
         }
 
+        Jenkins jenkins = Jenkins.getInstance();
+
         HttpSimpleRequest myrequest = new HttpSimpleRequest(url);
+
+        if (jenkins.proxy.name != null && jenkins.proxy.port != 0) {
+            myrequest.setProxyhost(jenkins.proxy.name);
+            myrequest.setProxyport(jenkins.proxy.port);
+        }
+        if ( headers != null) {
+            myrequest.setHeaders(headers);
+        }
+        //myrequest.setNoProxyHost(jenkins.proxy.noProxyHost);
 
         try {
             //myresult = myrequest.myRequest();
             myrequest.myRequest();
         } catch (IOException e) {
             e.printStackTrace();
+//        } catch (Exception e) {
+            listener.getLogger().println("Generic exception when launching the request");
         }
         listener.getLogger().println(myrequest.getCode());
         listener.getLogger().println(myrequest.getResult());
