@@ -9,8 +9,8 @@
     <version>2.11</version>
     <relativePath/>
   </parent>
-  <groupId>com.redcorjo.tests</groupId>
-  <artifactId>test1</artifactId>
+  <groupId>com.redcorjo.jenkins</groupId>
+  <artifactId>publish-url</artifactId>
   <version>1.0-SNAPSHOT</version>
   <packaging>hpi</packaging>
 
