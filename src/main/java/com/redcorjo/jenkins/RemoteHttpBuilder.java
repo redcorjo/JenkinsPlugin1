@@ -165,7 +165,7 @@ public class RemoteHttpBuilder extends Builder implements SimpleBuildStep {
          */
         public FormValidation doCheckUrl(@QueryParameter String value)
                 throws IOException, ServletException {
-            if (value.startsWith("http"))
+            if (value.startsWith("http://") || value.startsWith("https://") )
                 return FormValidation.ok();
             return FormValidation.error("Please enter an http or https URL");
         }
