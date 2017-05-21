@@ -1,33 +1,29 @@
 package com.redcorjo.jenkins;
 
-import hudson.Launcher;
+import com.redcorjo.shared.HttpSimpleRequest;
 import hudson.Extension;
 import hudson.FilePath;
+import hudson.Launcher;
+import hudson.model.*;
+import hudson.tasks.*;
 import hudson.util.FormValidation;
-import hudson.model.AbstractProject;
-import hudson.model.Run;
-import hudson.model.TaskListener;
-import hudson.tasks.Builder;
-import hudson.tasks.BuildStepDescriptor;
 import jenkins.model.Jenkins;
 import jenkins.tasks.SimpleBuildStep;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerRequest;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
 
-import com.redcorjo.shared.HttpSimpleRequest;
-
 /**
- * Sample {@link Builder}.
+ * Sample {@link Notifier}.
  *
  * <p>
  * When the user configures the project and enables this builder,
  * {@link DescriptorImpl#newInstance(StaplerRequest)} is invoked
- * and a new {@link RemoteHttpBuilder} is created. The created
+ * and a new {@link RemoteHttpPublisher} is created. The created
  * instance is persisted to the project configuration XML by using
  * XStream, so this allows you to use instance fields (like {@link #name})
  * to remember the configuration.
@@ -37,7 +33,7 @@ import com.redcorjo.shared.HttpSimpleRequest;
  *
  * @author Kohsuke Kawaguchi
  */
-public class RemoteHttpBuilder extends Builder implements SimpleBuildStep {
+public class RemoteHttpPublisher extends Notifier {
 
     private final String name;
     private final String headers;
@@ -45,11 +41,15 @@ public class RemoteHttpBuilder extends Builder implements SimpleBuildStep {
 
     // Fields in config.jelly must match the parameter names in the "DataBoundConstructor"
     @DataBoundConstructor
-    public RemoteHttpBuilder(String name, String headers, String url) {
+    public RemoteHttpPublisher(String name, String headers, String url) {
 
         this.name = name;
         this.headers = headers;
         this.url = url;
+    }
+
+    public BuildStepMonitor getRequiredMonitorService() {
+        return BuildStepMonitor.BUILD;
     }
 
     /**
@@ -64,7 +64,7 @@ public class RemoteHttpBuilder extends Builder implements SimpleBuildStep {
     public String getUrl() {return url; }
 
     @Override
-    public void perform(Run<?,?> build, FilePath workspace, Launcher launcher, TaskListener listener) {
+    public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) {
         // This is where you 'build' the project.
         // Since this is a dummy, we just say 'hello world' and call that a build.
 
@@ -73,7 +73,7 @@ public class RemoteHttpBuilder extends Builder implements SimpleBuildStep {
             listener.getLogger().println("This plugin is enabled");
         else {
             listener.getLogger().println("This plugin is disabled");
-            return;
+            return true;
         }
 
         Jenkins jenkins = Jenkins.getInstance();
@@ -102,7 +102,7 @@ public class RemoteHttpBuilder extends Builder implements SimpleBuildStep {
         listener.getLogger().println(myrequest.getResultjson());
         System.out.println("Myresult:" + myrequest.getResult());
         System.out.println("Mycode:" + myrequest.getCode());
-
+        return true;
     }
 
     // Overridden for better type safety.
@@ -114,7 +114,7 @@ public class RemoteHttpBuilder extends Builder implements SimpleBuildStep {
     }
 
     /**
-     * Descriptor for {@link RemoteHttpBuilder}. Used as a singleton.
+     * Descriptor for {@link RemoteHttpPublisher}. Used as a singleton.
      * The class is marked as public so that it can be accessed from views.
      *
      * <p>
@@ -122,7 +122,7 @@ public class RemoteHttpBuilder extends Builder implements SimpleBuildStep {
      * for the actual HTML fragment for the configuration screen.
      */
     @Extension // This indicates to Jenkins that this is an implementation of an extension point.
-    public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
+    public static final class DescriptorImpl extends BuildStepDescriptor<Publisher> {
         /**
          * To persist global configuration information,
          * simply store it in a field and call save().
@@ -137,7 +137,7 @@ public class RemoteHttpBuilder extends Builder implements SimpleBuildStep {
          * call load() in the constructor.
          */
         public DescriptorImpl() {
-            super(RemoteHttpBuilder.class);
+            super(RemoteHttpPublisher.class);
             load();
         }
 
@@ -169,7 +169,7 @@ public class RemoteHttpBuilder extends Builder implements SimpleBuildStep {
          * This human readable name is used in the configuration screen.
          */
         public String getDisplayName() {
-            return "Remote Http builder";
+            return "Remote Http Publisher";
         }
 
         @Override
