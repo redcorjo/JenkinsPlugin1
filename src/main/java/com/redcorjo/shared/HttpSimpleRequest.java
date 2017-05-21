@@ -108,8 +108,9 @@ public class HttpSimpleRequest {
             System.out.println("Header "+myheader+":"+myvalue);
         }
 
+        HttpResponse response;
         try {
-            HttpResponse response = client.execute(request);
+            response = client.execute(request);
         } catch (Exception e){
             this.code = 0;
             this.result = "";
