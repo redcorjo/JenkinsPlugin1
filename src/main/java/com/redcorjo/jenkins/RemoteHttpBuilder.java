@@ -29,7 +29,7 @@ import com.redcorjo.shared.HttpSimpleRequest;
  * {@link DescriptorImpl#newInstance(StaplerRequest)} is invoked
  * and a new {@link RemoteHttpBuilder} is created. The created
  * instance is persisted to the project configuration XML by using
- * XStream, so this allows you to use instance fields (like {@link #name})
+ * XStream, so this allows you to use instance fields (like {@link #parameters})
  * to remember the configuration.
  *
  * <p>
@@ -39,15 +39,15 @@ import com.redcorjo.shared.HttpSimpleRequest;
  */
 public class RemoteHttpBuilder extends Builder implements SimpleBuildStep {
 
-    private final String name;
+    private final String parameters;
     private final String headers;
     private final String url;
 
     // Fields in config.jelly must match the parameter names in the "DataBoundConstructor"
     @DataBoundConstructor
-    public RemoteHttpBuilder(String name, String headers, String url) {
+    public RemoteHttpBuilder(String parameters, String headers, String url) {
 
-        this.name = name;
+        this.parameters = parameters;
         this.headers = headers;
         this.url = url;
     }
@@ -55,8 +55,8 @@ public class RemoteHttpBuilder extends Builder implements SimpleBuildStep {
     /**
      * We'll use this from the {@code config.jelly}.
      */
-    public String getName() {
-        return name;
+    public String getParameters() {
+        return parameters;
     }
 
     public String getHeaders() {return headers; }
@@ -76,16 +76,26 @@ public class RemoteHttpBuilder extends Builder implements SimpleBuildStep {
             return;
         }
 
+        String buildLog = workspace + "/" + build.number + "/log";
+        listener.getLogger().println("Build log is " + buildLog);
+
         Jenkins jenkins = Jenkins.getInstance();
 
         HttpSimpleRequest myrequest = new HttpSimpleRequest(url);
 
-        if (jenkins.proxy.name != null && jenkins.proxy.port != 0) {
-            myrequest.setProxyhost(jenkins.proxy.name);
-            myrequest.setProxyport(jenkins.proxy.port);
+        try {
+            if (jenkins.proxy.name != null && jenkins.proxy.port != 0) {
+                myrequest.setProxyhost(jenkins.proxy.name);
+                myrequest.setProxyport(jenkins.proxy.port);
+            }
+        } catch (Exception e){
+            listener.getLogger().println("No proxy used");
         }
         if ( headers != null) {
             myrequest.setHeaders(headers);
+        }
+        if ( parameters != null) {
+            myrequest.setParameters(parameters);
         }
         //myrequest.setNoProxyHost(jenkins.proxy.noProxyHost);
 
@@ -94,7 +104,7 @@ public class RemoteHttpBuilder extends Builder implements SimpleBuildStep {
             myrequest.myRequest();
         } catch (IOException e) {
             e.printStackTrace();
-//        } catch (Exception e) {
+        } catch (Exception e) {
             listener.getLogger().println("Generic exception when launching the request");
         }
         listener.getLogger().println(myrequest.getCode());
@@ -142,7 +152,7 @@ public class RemoteHttpBuilder extends Builder implements SimpleBuildStep {
         }
 
         /**
-         * Performs on-the-fly validation of the form field 'name'.
+         * Performs on-the-fly validation of the form field 'parameters'.
          *
          * @param value
          *      This parameter receives the value that the user has typed.
@@ -166,7 +176,7 @@ public class RemoteHttpBuilder extends Builder implements SimpleBuildStep {
         }
 
         /**
-         * This human readable name is used in the configuration screen.
+         * This human readable parameters is used in the configuration screen.
          */
         public String getDisplayName() {
             return "Remote Http builder";
@@ -186,7 +196,7 @@ public class RemoteHttpBuilder extends Builder implements SimpleBuildStep {
         /**
          * This method returns true if the global configuration says we should speak French.
          *
-         * The method name is bit awkward because global.jelly calls this method to determine
+         * The method parameters is bit awkward because global.jelly calls this method to determine
          * the initial state of the checkbox by the naming convention.
          */
         public boolean getEnabled() {

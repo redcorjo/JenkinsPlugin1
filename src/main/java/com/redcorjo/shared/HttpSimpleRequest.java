@@ -1,5 +1,6 @@
 package com.redcorjo.shared;
 
+import org.apache.commons.httpclient.params.HttpParams;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -25,6 +26,7 @@ public class HttpSimpleRequest {
     private String url;
     private String result;
     private String headers;
+    private String parameters;
     private JSONObject resultjson;
     private int code;
     private String proxyhost;
@@ -79,6 +81,9 @@ public class HttpSimpleRequest {
         this.headers = headers;
     }
 
+    public void setParameters(String parameters) {
+        this.parameters = parameters;
+    }
 
     public String myRequest() throws IOException{
 
@@ -103,8 +108,13 @@ public class HttpSimpleRequest {
             System.out.println("Header "+myheader+":"+myvalue);
         }
 
-        HttpResponse response = client.execute(request);
-
+        try {
+            HttpResponse response = client.execute(request);
+        } catch (Exception e){
+            this.code = 0;
+            this.result = "";
+            return this.result;
+        }
 
         BufferedReader rd = new BufferedReader(
                 new InputStreamReader(response.getEntity().getContent()));
