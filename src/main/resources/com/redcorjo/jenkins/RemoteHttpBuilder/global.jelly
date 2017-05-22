@@ -15,7 +15,7 @@
   <f:section title="Remote Http builder">
     <f:entry title="Enabled" field="enabled"
       description="Check if we enable the checkbox">
-      <f:checkbox />
+      <f:checkbox default="true"/>
     </f:entry>
   </f:section>
 </j:jelly>
