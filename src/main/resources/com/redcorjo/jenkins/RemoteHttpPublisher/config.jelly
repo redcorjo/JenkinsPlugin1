@@ -13,12 +13,42 @@
     <f:entry title="URL" field="url">
         <f:textbox />
       </f:entry>
-      <f:entry title="Headers" field="headers"
-      description='List all headers under json style like { "param1": "value1", "param2": "value2" } '>
+    <f:block>
+        <table>
+            <f:optionalBlock name="useheaders" title="Enable if custom headers are used" checked="false" inline="true">
+                <f:entry title="Headers" field="headers"
+                description='List all headers under json style like { "param1": "value1", "param2": "value2" } '>
               <f:textbox />
             </f:entry>
-     <f:entry title="Parameters" field="parameters"
-           description='List all Parameters under json style like { "param1": "value1", "param2": "value2" } '>
-                   <f:textbox />
-                 </f:entry>
+            </f:optionalBlock>
+        </table>
+    </f:block>
+    <f:block>
+        <table>
+            <f:optionalBlock name="useparamaters" title="Enable if custom parameters are used" checked="false" inline="true">
+                <f:entry title="Parameters" field="parameters"
+                         description='List all Parameters under json style like { "param1": "value1", "param2": "value2" } '>
+                    <f:textbox />
+                </f:entry>
+            </f:optionalBlock>
+        </table>
+    </f:block>
+    <f:block>
+        <table>
+            <f:optionalBlock name="usecredentials" title="Enable if credentials is required" checked="false" inline="true">
+                <f:entry title="user" field="user">
+                    <f:textbox />
+                </f:entry>
+                <f:entry title="password">
+                    <f:password field="password" />
+                </f:entry>
+            </f:optionalBlock>
+        </table>
+    </f:block>
+    <f:entry>
+    <select name="method" description="Select if GET or POST HTTP methods are used (default GET)">
+        <option value="GET">GET</option>
+        <option value="POST">POST</option>
+    </select>
+</f:entry>
 </j:jelly>

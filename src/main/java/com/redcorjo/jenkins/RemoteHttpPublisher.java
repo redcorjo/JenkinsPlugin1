@@ -35,15 +35,35 @@ public class RemoteHttpPublisher extends Notifier {
 
     private final String parameters;
     private final String headers;
+    private final String user;
+    private final String password;
+    private final String method;
     private final String url;
+    /*private final String useheaders;
+    private final String useparameters;
+    private final String usecredentials; */
 
-    // Fields in config.jelly must match the parameter names in the "DataBoundConstructor"
+      // Fields in config.jelly must match the parameter names in the "DataBoundConstructor"
     @DataBoundConstructor
-    public RemoteHttpPublisher(String parameters, String headers, String url) {
+    public RemoteHttpPublisher(String parameters, String headers, String url, String method, String user, String password) {
 
+        /*
+        if (useparameters != null) {
+            this.parameters = useparameters;
+        }
+        if ( useheaders != null ) {
+            this.headers = useheaders.headers;
+        }
+        if ( usecredentials != null ) {
+            this.user = usecredentials.user;
+            this.password = usecredentials.password;
+        }*/
         this.parameters = parameters;
-        this.headers = headers;
+        this.method = method;
         this.url = url;
+        this.user = user;
+        this.password = password;
+        this.headers = headers;
     }
 
     public BuildStepMonitor getRequiredMonitorService() {
@@ -60,6 +80,32 @@ public class RemoteHttpPublisher extends Notifier {
     public String getHeaders() {return headers; }
 
     public String getUrl() {return url; }
+
+    public String getUser() {
+        return user;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public String getMethod() {
+        return method;
+    }
+
+    /*
+    public String getUseheaders() {
+        return useheaders;
+    }
+
+    public String getUseparameters() {
+        return useparameters;
+    }
+
+    public String getUsecredentials() {
+        return usecredentials;
+    }
+    */
 
     @Override
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) {
