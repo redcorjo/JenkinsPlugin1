@@ -15,22 +15,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import javax.servlet.ServletException;
 import java.io.IOException;
 
-/**
- * Sample {@link Notifier}.
- *
- * <p>
- * When the user configures the project and enables this builder,
- * {@link DescriptorImpl#newInstance(StaplerRequest)} is invoked
- * and a new {@link RemoteHttpPublisher} is created. The created
- * instance is persisted to the project configuration XML by using
- * XStream, so this allows you to use instance fields (like {@link #parameters})
- * to remember the configuration.
- *
- * <p>
- * When a build is performed, the {@link #perform} method will be invoked. 
- *
- * @author Kohsuke Kawaguchi
- */
+
 public class RemoteHttpPublisher extends Notifier {
 
     private String parameters;
@@ -106,10 +91,7 @@ public class RemoteHttpPublisher extends Notifier {
 
     @Override
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) {
-        // This is where you 'build' the project.
-        // Since this is a dummy, we just say 'hello world' and call that a build.
 
-        // This also shows how you can consult the global configuration of the builder
         if (getDescriptor().getEnabled())
             listener.getLogger().println("This plugin is enabled");
         else {
