@@ -21,22 +21,6 @@ import java.io.IOException;
 
 import com.redcorjo.shared.HttpSimpleRequest;
 
-/**
- * Sample {@link Builder}.
- *
- * <p>
- * When the user configures the project and enables this builder,
- * {@link DescriptorImpl#newInstance(StaplerRequest)} is invoked
- * and a new {@link RemoteHttpBuilder} is created. The created
- * instance is persisted to the project configuration XML by using
- * XStream, so this allows you to use instance fields (like {@link #parameters})
- * to remember the configuration.
- *
- * <p>
- * When a build is performed, the {@link #perform} method will be invoked. 
- *
- * @author Kohsuke Kawaguchi
- */
 public class RemoteHttpBuilder extends Builder implements SimpleBuildStep {
 
     private final String parameters;
@@ -65,10 +49,7 @@ public class RemoteHttpBuilder extends Builder implements SimpleBuildStep {
 
     @Override
     public void perform(Run<?,?> build, FilePath workspace, Launcher launcher, TaskListener listener) {
-        // This is where you 'build' the project.
-        // Since this is a dummy, we just say 'hello world' and call that a build.
 
-        // This also shows how you can consult the global configuration of the builder
         if (getDescriptor().getEnabled())
             listener.getLogger().println("This plugin is enabled");
         else {
@@ -115,22 +96,13 @@ public class RemoteHttpBuilder extends Builder implements SimpleBuildStep {
 
     }
 
-    // Overridden for better type safety.
-    // If your plugin doesn't really define any property on Descriptor,
-    // you don't have to do this.
+
     @Override
     public DescriptorImpl getDescriptor() {
         return (DescriptorImpl)super.getDescriptor();
     }
 
-    /**
-     * Descriptor for {@link RemoteHttpBuilder}. Used as a singleton.
-     * The class is marked as public so that it can be accessed from views.
-     *
-     * <p>
-     * See {@code src/main/resources/hudson/plugins/hello_world/RemoteHttpBuilder/*.jelly}
-     * for the actual HTML fragment for the configuration screen.
-     */
+
     @Extension // This indicates to Jenkins that this is an implementation of an extension point.
     public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
         /**
@@ -151,18 +123,7 @@ public class RemoteHttpBuilder extends Builder implements SimpleBuildStep {
             load();
         }
 
-        /**
-         * Performs on-the-fly validation of the form field 'parameters'.
-         *
-         * @param value
-         *      This parameter receives the value that the user has typed.
-         * @return
-         *      Indicates the outcome of the validation. This is sent to the browser.
-         *      <p>
-         *      Note that returning {@link FormValidation#error(String)} does not
-         *      prevent the form from being saved. It just means that a message
-         *      will be displayed to the user. 
-         */
+
         public FormValidation doCheckUrl(@QueryParameter String value)
                 throws IOException, ServletException {
             if (value.startsWith("http://") || value.startsWith("https://") )
@@ -193,12 +154,6 @@ public class RemoteHttpBuilder extends Builder implements SimpleBuildStep {
             return super.configure(req,formData);
         }
 
-        /**
-         * This method returns true if the global configuration says we should speak French.
-         *
-         * The method parameters is bit awkward because global.jelly calls this method to determine
-         * the initial state of the checkbox by the naming convention.
-         */
         public boolean getEnabled() {
             return enabled;
         }

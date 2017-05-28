@@ -1,6 +1,7 @@
 package com.redcorjo.jenkins;
 
 import com.redcorjo.shared.HttpSimpleRequest;
+import com.redcorjo.shared.SharedAPIs;
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.model.*;
@@ -150,14 +151,6 @@ public class RemoteHttpPublisher extends Notifier {
         return (DescriptorImpl)super.getDescriptor();
     }
 
-    /**
-     * Descriptor for {@link RemoteHttpPublisher}. Used as a singleton.
-     * The class is marked as public so that it can be accessed from views.
-     *
-     * <p>
-     * See {@code src/main/resources/hudson/plugins/hello_world/RemoteHttpBuilder/*.jelly}
-     * for the actual HTML fragment for the configuration screen.
-     */
     @Extension // This indicates to Jenkins that this is an implementation of an extension point.
     public static final class DescriptorImpl extends BuildStepDescriptor<Publisher> {
         /**
@@ -178,23 +171,41 @@ public class RemoteHttpPublisher extends Notifier {
             load();
         }
 
-        /**
-         * Performs on-the-fly validation of the form field 'parameters'.
-         *
-         * @param value
-         *      This parameter receives the value that the user has typed.
-         * @return
-         *      Indicates the outcome of the validation. This is sent to the browser.
-         *      <p>
-         *      Note that returning {@link FormValidation#error(String)} does not
-         *      prevent the form from being saved. It just means that a message
-         *      will be displayed to the user. 
-         */
         public FormValidation doCheckUrl(@QueryParameter String value)
                 throws IOException, ServletException {
             if (value.startsWith("http://") || value.startsWith("https://") )
                 return FormValidation.ok();
             return FormValidation.error("Please enter an http or https URL");
+        }
+
+        public FormValidation doCheckUser(@QueryParameter String value) {
+            if ( value.length() > 1 ) {
+                return FormValidation.ok();
+            }
+            return FormValidation.error("Please enter a valid username");
+        }
+
+        public FormValidation doCheckPassword(@QueryParameter String value) {
+            if ( value.length() > 1 ) {
+                return FormValidation.ok();
+            }
+            return FormValidation.error("Please enter a valid password");
+        }
+
+        public FormValidation doCheckHeaders(@QueryParameter String value){
+            if (SharedAPIs.checkJson(value)){
+                return FormValidation.ok("String JSON Compatible");
+            } else {
+                return FormValidation.error("String NOT JSON Compatible. Try at https://jsonformatter.org");
+            }
+        }
+
+        public FormValidation doCheckParameters(@QueryParameter String value){
+            if (SharedAPIs.checkJson(value)){
+                return FormValidation.ok("String JSON Compatible");
+            } else {
+                return FormValidation.error("String NOT JSON Compatible. Try at https://jsonformatter.org");
+            }
         }
 
         public boolean isApplicable(Class<? extends AbstractProject> aClass) {
@@ -220,12 +231,6 @@ public class RemoteHttpPublisher extends Notifier {
             return super.configure(req,formData);
         }
 
-        /**
-         * This method returns true if the global configuration says we should speak French.
-         *
-         * The method parameters is bit awkward because global.jelly calls this method to determine
-         * the initial state of the checkbox by the naming convention.
-         */
         public boolean getEnabled() {
             return enabled;
         }
