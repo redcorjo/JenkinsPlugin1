@@ -33,37 +33,36 @@ import java.io.IOException;
  */
 public class RemoteHttpPublisher extends Notifier {
 
-    private final String parameters;
-    private final String headers;
-    private final String user;
-    private final String password;
-    private final String method;
-    private final String url;
-    /*private final String useheaders;
-    private final String useparameters;
-    private final String usecredentials; */
+    private String parameters;
+    private String headers;
+    private String user;
+    private String password;
+    private String method;
+    private String url;
+    private boolean useheaders;
+    private boolean useparameters;
+    private boolean usecredentials;
 
       // Fields in config.jelly must match the parameter names in the "DataBoundConstructor"
     @DataBoundConstructor
-    public RemoteHttpPublisher(String parameters, String headers, String url, String method, String user, String password) {
+    public RemoteHttpPublisher(String parameters, String headers, String url, String method, String user, String password, Boolean useheaders, Boolean useparameters, Boolean usecredentials) {
 
-        /*
-        if (useparameters != null) {
-            this.parameters = useparameters;
-        }
-        if ( useheaders != null ) {
-            this.headers = useheaders.headers;
-        }
-        if ( usecredentials != null ) {
-            this.user = usecredentials.user;
-            this.password = usecredentials.password;
-        }*/
-        this.parameters = parameters;
         this.method = method;
         this.url = url;
-        this.user = user;
-        this.password = password;
-        this.headers = headers;
+        this.useheaders = useheaders;
+        this.useparameters = useparameters;
+        this.usecredentials = usecredentials;
+
+        if (useparameters) {
+            this.parameters = parameters;
+        }
+        if ( useheaders ) {
+            this.headers = headers;
+        }
+        if ( usecredentials) {
+            this.user = user;
+            this.password = password;
+        }
     }
 
     public BuildStepMonitor getRequiredMonitorService() {
@@ -93,19 +92,17 @@ public class RemoteHttpPublisher extends Notifier {
         return method;
     }
 
-    /*
-    public String getUseheaders() {
+    public boolean isUseheaders() {
         return useheaders;
     }
 
-    public String getUseparameters() {
+    public boolean isUseparameters() {
         return useparameters;
     }
 
-    public String getUsecredentials() {
+    public boolean isUsecredentials() {
         return usecredentials;
     }
-    */
 
     @Override
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) {

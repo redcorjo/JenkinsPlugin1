@@ -15,7 +15,7 @@
       </f:entry>
     <f:block>
         <table>
-            <f:optionalBlock name="useheaders" title="Enable if custom headers are used" checked="false" inline="true">
+            <f:optionalBlock name="useheaders" title="Enable if custom headers are used" inline="true" checked="${instance.useheaders}">
                 <f:entry title="Headers" field="headers"
                 description='List all headers under json style like { "param1": "value1", "param2": "value2" } '>
               <f:textbox />
@@ -25,7 +25,7 @@
     </f:block>
     <f:block>
         <table>
-            <f:optionalBlock name="useparamaters" title="Enable if custom parameters are used" checked="false" inline="true">
+            <f:optionalBlock name="useparameters" title="Enable if custom parameters are used" inline="true" checked="${instance.useparameters}">
                 <f:entry title="Parameters" field="parameters"
                          description='List all Parameters under json style like { "param1": "value1", "param2": "value2" } '>
                     <f:textbox />
@@ -35,7 +35,7 @@
     </f:block>
     <f:block>
         <table>
-            <f:optionalBlock name="usecredentials" title="Enable if credentials is required" checked="false" inline="true">
+            <f:optionalBlock name="usecredentials" title="Enable if credentials is required" inline="true" checked="${instance.usecredentials}">
                 <f:entry title="user" field="user">
                     <f:textbox />
                 </f:entry>
