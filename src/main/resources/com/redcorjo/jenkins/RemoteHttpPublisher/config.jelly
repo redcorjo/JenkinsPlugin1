@@ -45,10 +45,14 @@
             </f:optionalBlock>
         </table>
     </f:block>
-    <f:entry>
-    <select name="method" description="Select if GET or POST HTTP methods are used (default GET)">
-        <option value="GET">GET</option>
-        <option value="POST">POST</option>
-    </select>
-</f:entry>
+    <f:entry name="method" title="Select if GET or POST HTTP methods are used (default GET)" field="method">
+        <select name="method">
+            <option value="GET" selected="${instance.method == 'GET'}">GET</option>
+            <option value="POST" selected="${instance.method == 'POST'}">POST</option>
+        </select>
+    </f:entry>
+    <f:entry title="Ignore proxy settings" field="ignoreproxy"
+             description="Check if to ignore global proxy settings">
+        <f:checkbox checked="${it.ignoreproxy}"/>
+    </f:entry>
 </j:jelly>

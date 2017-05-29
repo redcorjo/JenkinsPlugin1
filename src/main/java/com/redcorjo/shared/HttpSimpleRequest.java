@@ -1,10 +1,12 @@
 package com.redcorjo.shared;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.HttpClientBuilder;
 
@@ -36,6 +38,12 @@ public class HttpSimpleRequest {
     private String proxyhost;
     private int proxyport;
     private String noProxyHost;
+    private String user;
+    private String password;
+    private String encodedcredentials;
+    private int method;
+    public final int GET = 1;
+    public final int POST = 2;
 
     public HttpSimpleRequest(){
         super();
@@ -89,10 +97,51 @@ public class HttpSimpleRequest {
         this.parameters = parameters;
     }
 
+    public String getUser() {
+        return user;
+    }
+
+    public void setUser(String user) {
+        this.user = user;
+    }
+
+    private String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public int getMethod() {
+        return method;
+    }
+
+    public void setMethod(int method) {
+        this.method = method;
+    }
+
+    private String getEncodedcredentials() {
+        return encodedcredentials;
+    }
+
+    private void setEncodedcredentials(String encodedcredentials) {
+        this.encodedcredentials = encodedcredentials;
+    }
+
     public String myRequest() throws IOException{
 
         HttpClient client = HttpClientBuilder.create().build();
+
+
+        if ( getMethod() == this.GET) {
+            System.out.println("Using GET method");
+        } else {
+            System.out.println("Using POST method");
+        }
         HttpGet request = new HttpGet();
+        HttpPost requestpost = new HttpPost();
+
 
         if (proxyhost != null) {
             HttpHost proxy = new HttpHost(proxyhost, proxyport, "http");
@@ -111,6 +160,7 @@ public class HttpSimpleRequest {
             request.addHeader(myheader, myvalue);
             System.out.println("Header "+myheader+":"+myvalue);
         }
+
 
         URL myurl = new URL(url);
         URIBuilder builder = new URIBuilder();
@@ -147,6 +197,23 @@ public class HttpSimpleRequest {
             return this.result;
         }
 
+        if (response.getStatusLine().getStatusCode() == 401){
+            if ( user != null && password != null ) {
+                request.addHeader("Authorization", getEncodedcredentials());
+            } else {
+                this.code = response.getStatusLine().getStatusCode();
+                this.result = "Authentication failed";
+                return this.result;
+            }
+            try {
+                response = client.execute(request);
+            } catch (Exception e){
+                this.code = 0;
+                this.result = "";
+                return this.result;
+            }
+        }
+
         BufferedReader rd = new BufferedReader(
                 new InputStreamReader(response.getEntity().getContent()));
 
@@ -172,6 +239,15 @@ public class HttpSimpleRequest {
     JSONObject convertToJson(String mystring){
         JSONObject jsonObj = new JSONObject(mystring);
         return jsonObj;
+    }
+
+    public void setCredentials(String user, String password){
+        setUser(user);
+        setPassword(password);
+        final String credentials = user+":"+password;
+        final byte[] encodedBytes = Base64.encodeBase64(credentials.getBytes());
+        final String encodedcredentials = "Basic " + encodedBytes.toString();
+        setEncodedcredentials(encodedcredentials);
     }
 
     public static void main(String[] args){

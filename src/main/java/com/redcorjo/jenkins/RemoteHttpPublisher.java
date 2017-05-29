@@ -28,16 +28,18 @@ public class RemoteHttpPublisher extends Notifier {
     private boolean useheaders;
     private boolean useparameters;
     private boolean usecredentials;
+    private boolean ignoreproxy;
 
       // Fields in config.jelly must match the parameter names in the "DataBoundConstructor"
     @DataBoundConstructor
-    public RemoteHttpPublisher(String parameters, String headers, String url, String method, String user, String password, Boolean useheaders, Boolean useparameters, Boolean usecredentials) {
+    public RemoteHttpPublisher(String parameters, String headers, String url, String method, String user, String password, Boolean useheaders, Boolean useparameters, Boolean usecredentials, Boolean ignoreproxy) {
 
         this.method = method;
         this.url = url;
         this.useheaders = useheaders;
         this.useparameters = useparameters;
         this.usecredentials = usecredentials;
+        this.ignoreproxy = ignoreproxy;
 
         if (useparameters) {
             this.parameters = parameters;
@@ -90,6 +92,14 @@ public class RemoteHttpPublisher extends Notifier {
         return usecredentials;
     }
 
+    public boolean isIgnoreproxy() {
+        return ignoreproxy;
+    }
+
+    public void setIgnoreproxy(boolean ignoreproxy) {
+        this.ignoreproxy = ignoreproxy;
+    }
+
     @Override
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) {
 
@@ -108,7 +118,7 @@ public class RemoteHttpPublisher extends Notifier {
         HttpSimpleRequest myrequest = new HttpSimpleRequest(url);
 
         try {
-            if (jenkins.proxy.name != null && jenkins.proxy.port != 0) {
+            if (jenkins.proxy.name != null && jenkins.proxy.port != 0 && isIgnoreproxy() == false) {
                 myrequest.setProxyhost(jenkins.proxy.name);
                 myrequest.setProxyport(jenkins.proxy.port);
             }
@@ -120,6 +130,18 @@ public class RemoteHttpPublisher extends Notifier {
         }
         if ( parameters != null) {
             myrequest.setParameters(parameters);
+        }
+
+        if (usecredentials) {
+            myrequest.setCredentials(user,password);
+        }
+
+        if ( method == "GET") {
+            myrequest.setMethod(myrequest.GET);
+        } else if ( method == "POST") {
+            myrequest.setMethod(myrequest.POST);
+        } else {
+            myrequest.setMethod(myrequest.GET);
         }
         //myrequest.setNoProxyHost(jenkins.proxy.noProxyHost);
 
