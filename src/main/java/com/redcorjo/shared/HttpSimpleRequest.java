@@ -138,6 +138,114 @@ public class HttpSimpleRequest {
             System.out.println("Using GET method");
         } else {
             System.out.println("Using POST method");
+            myRequestPost();
+        }
+        HttpGet request = new HttpGet();
+        HttpPost requestpost = new HttpPost();
+
+
+        if (proxyhost != null) {
+            HttpHost proxy = new HttpHost(proxyhost, proxyport, "http");
+            RequestConfig config = RequestConfig.custom().setProxy(proxy).build();
+            request.setConfig(config);
+            System.out.println("Using proxy: " + proxyhost + ":" + proxyport);
+        }
+
+        // add request header
+        request.addHeader("User-Agent", USER_AGENT);
+        JSONObject myheaders = new JSONObject(headers);
+        Iterator<?> headerkeys = myheaders.keys();
+        while (headerkeys.hasNext()){
+            String myheader = (String)headerkeys.next();
+            String myvalue = myheaders.getString(myheader);
+            request.addHeader(myheader, myvalue);
+            System.out.println("Header "+myheader+":"+myvalue);
+        }
+
+
+        URL myurl = new URL(url);
+        URIBuilder builder = new URIBuilder();
+        builder.setScheme(myurl.getProtocol()).setHost(myurl.getHost()).setPort(myurl.getPort()).setPath(myurl.getPath());
+        if (! parameters.isEmpty()) {
+            JSONObject myparams = new JSONObject(parameters);
+            Iterator<?> paramskeys = myparams.keys();
+            while (paramskeys.hasNext()) {
+                String myparam = (String) paramskeys.next();
+                String myvalue = myparams.getString(myparam);
+                builder.addParameter(myparam, myvalue);
+                System.out.println("Parameter " + myparam + ":" + myvalue);
+            }
+        }
+
+        URI uri;
+        try {
+            uri = builder.build();
+            System.out.println("URL:" + uri.toString());
+        } catch (Exception e){
+            this.code = 0;
+            this.result = "";
+            return this.result;
+        }
+
+        request.setURI(uri);
+
+        HttpResponse response;
+        try {
+            response = client.execute(request);
+        } catch (Exception e){
+            this.code = 0;
+            this.result = "";
+            return this.result;
+        }
+
+        if (response.getStatusLine().getStatusCode() == 401){
+            if ( user != null && password != null ) {
+                request.addHeader("Authorization", getEncodedcredentials());
+            } else {
+                this.code = response.getStatusLine().getStatusCode();
+                this.result = "Authentication failed";
+                return this.result;
+            }
+            try {
+                response = client.execute(request);
+            } catch (Exception e){
+                this.code = 0;
+                this.result = "";
+                return this.result;
+            }
+        }
+
+        BufferedReader rd = new BufferedReader(
+                new InputStreamReader(response.getEntity().getContent()));
+
+        StringBuffer result = new StringBuffer();
+        String line = "";
+        while ((line = rd.readLine()) != null) {
+            result.append(line);
+        }
+        this.result = result.toString();
+        this.code = response.getStatusLine().getStatusCode();
+
+        try {
+            setResultjson(new JSONObject(result.toString()));
+            System.out.println("String JSON Compatible");
+        } catch (JSONException e){
+            setResultjson(null);
+            System.out.println("String NOT JSON Compatible");
+        }
+
+        return result.toString();
+    }
+
+    public String myRequestPost() throws IOException{
+
+        HttpClient client = HttpClientBuilder.create().build();
+
+
+        if ( getMethod() == this.GET) {
+            System.out.println("Using GET method");
+        } else {
+            System.out.println("Using POST method");
         }
         HttpGet request = new HttpGet();
         HttpPost requestpost = new HttpPost();
