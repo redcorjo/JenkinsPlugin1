@@ -45,10 +45,12 @@
             </f:optionalBlock>
         </table>
     </f:block>
-    <f:entry name="method" title="Select if GET or POST HTTP methods are used (default GET)" field="method">
+    <f:entry name="method" title="Select if GET, POST, PUT or DELETE HTTP methods are used (default GET)" field="method">
         <select name="method">
-            <option value="GET" selected="${instance.method == 'GET'}">GET</option>
-            <option value="POST" selected="${instance.method == 'POST'}">POST</option>
+            <f:option value="GET" selected="${instance.method == 'GET'}">GET</f:option>
+            <f:option value="POST" selected="${instance.method == 'POST'}">POST</f:option>
+            <f:option value="PUT" selected="${instance.method == 'PUT'}">PUT</f:option>
+            <f:option value="DELETE" selected="${instance.method == 'DELETE'}">DELETE</f:option>
         </select>
     </f:entry>
     <f:entry title="Ignore proxy settings" field="ignoreproxy"

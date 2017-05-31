@@ -136,10 +136,14 @@ public class RemoteHttpPublisher extends Notifier {
             myrequest.setCredentials(user,password);
         }
 
-        if ( method == "GET") {
+        if ( method.equalsIgnoreCase("GET")) {
             myrequest.setMethod(myrequest.GET);
-        } else if ( method == "POST") {
+        } else if ( method.equalsIgnoreCase("POST")) {
             myrequest.setMethod(myrequest.POST);
+        } else if ( method.equalsIgnoreCase("PUT")) {
+            myrequest.setMethod(myrequest.PUT);
+        } else if ( method.equalsIgnoreCase("DELETE")) {
+            myrequest.setMethod(myrequest.DELETE);
         } else {
             myrequest.setMethod(myrequest.GET);
         }
