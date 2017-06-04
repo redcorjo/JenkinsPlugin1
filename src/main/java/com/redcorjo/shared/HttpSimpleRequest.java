@@ -2,6 +2,7 @@ package com.redcorjo.shared;
 
 //import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -24,6 +25,8 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Iterator;
 
 import org.json.JSONException;
@@ -295,28 +298,6 @@ public class HttpSimpleRequest {
 
         HttpPost request = new HttpPost();
 
-
-        if (this.files != null) {
-            MultipartEntityBuilder builderfile = MultipartEntityBuilder.create();
-            builderfile.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
-            for (String myfile: files){
-                final File file = new File(myfile);
-                FileBody fb = new FileBody(file);
-                builderfile.addPart(myfile, fb);
-                System.out.println("Adding file to upload: " + myfile);
-             }
-        }
-        /*
-        final File file = new File(fileName);
-        FileBody fb = new FileBody(file);
-
-        builderfile.addPart("file", fb);
-        builderfile.addTextBody("userName", userName);
-        builderfile.addTextBody("password", password);
-        builderfile.addTextBody("macAddress",  macAddress);
-        final HttpEntity yourEntity = builderfile.build();
-        */
-
         if (proxyhost != null) {
             request.setConfig(setMyProxy());
         }
@@ -345,13 +326,19 @@ public class HttpSimpleRequest {
         }
 
         request.setURI(uri);
+        if ( this.files != null) {
+            MultipartEntityBuilder multipart = attachFiles();
+            request.setEntity(multipart.build());
+        }
 
         HttpResponse response;
+        HttpEntity entity;
         try {
             response = client.execute(request);
+            entity = response.getEntity();
         } catch (Exception e){
             this.code = 500;
-            this.result = "";
+            this.result = "Error";
             return this.result;
         }
 
@@ -365,14 +352,29 @@ public class HttpSimpleRequest {
             }
             try {
                 response = client.execute(request);
+                entity = response.getEntity();
             } catch (Exception e){
                 this.code = 500;
-                this.result = "";
+                this.result = "Error";
                 return this.result;
             }
         }
-
         return buildMyResponse(response);
+    }
+
+    private MultipartEntityBuilder attachFiles(){
+        MultipartEntityBuilder builderfile = null;
+        if (this.files != null) {
+            builderfile = MultipartEntityBuilder.create();
+            builderfile.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
+            for (String myfile: files){
+                final File file = new File(myfile);
+                FileBody fb = new FileBody(file);
+                builderfile.addPart(Paths.get(myfile).getFileName().toString(), fb);
+                System.out.println("Adding file to upload: " + myfile);
+            }
+        }
+        return builderfile;
     }
 
     public String myRequestPut() throws IOException{

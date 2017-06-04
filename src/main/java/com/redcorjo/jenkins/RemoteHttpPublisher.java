@@ -167,8 +167,13 @@ public class RemoteHttpPublisher extends Notifier {
             scanner.setBasedir(myworkspace);
             scanner.setCaseSensitive(false);
             scanner.scan();
-            String[] myfiles = scanner.getIncludedFiles();
+            String[] mylist = scanner.getIncludedFiles();
+            String[] myfiles = new String[mylist.length];
+            for (int count = 0 ; count < mylist.length; count++) {
+                myfiles[0] = myworkspace + File.separator + mylist[0];
+            }
             myrequest.setFiles(myfiles);
+            //myrequest.setFiles(mylist);
         }
 
         /*
