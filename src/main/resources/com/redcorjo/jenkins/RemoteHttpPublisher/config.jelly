@@ -45,6 +45,15 @@
             </f:optionalBlock>
         </table>
     </f:block>
+    <f:block>
+        <table>
+            <f:optionalBlock name="uploadfiles" title="Enable if required to upload files. If enabled, POST method is used" inline="true" checked="${instance.uploadfiles}">
+                <f:entry title="files" field="files" description="Wildcard of files to upload">
+                    <f:textbox />
+                </f:entry>
+            </f:optionalBlock>
+        </table>
+    </f:block>
     <f:entry name="method" title="Select if GET, POST, PUT or DELETE HTTP methods are used (default GET)" field="method">
         <select name="method">
             <f:option value="GET" selected="${instance.method == 'GET'}">GET</f:option>

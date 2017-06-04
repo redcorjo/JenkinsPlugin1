@@ -1,5 +1,6 @@
 package com.redcorjo.shared;
 
+//import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
@@ -10,9 +11,14 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.entity.mime.HttpMultipartMode;
+import org.apache.http.entity.mime.MultipartEntity;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.impl.client.HttpClientBuilder;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
@@ -45,6 +51,7 @@ public class HttpSimpleRequest {
     private String password;
     private String encodedcredentials;
     private int method;
+    private String [] files;
     public final int GET = 1;
     public final int POST = 2;
     public final int PUT = 3;
@@ -134,6 +141,10 @@ public class HttpSimpleRequest {
         this.encodedcredentials = encodedcredentials;
     }
 
+    public void setFiles(String[] files) {
+        this.files = files;
+    }
+
     private RequestConfig setMyProxy(){
         RequestConfig config = null;
         if (proxyhost != null) {
@@ -207,6 +218,11 @@ public class HttpSimpleRequest {
         }
     }
 
+    public String myRequest(String[] files) throws IOException{
+        this.files = files;
+        return this.myRequest();
+    }
+
     public String myRequestGet() throws IOException{
 
         HttpClient client = HttpClientBuilder.create().build();
@@ -270,26 +286,6 @@ public class HttpSimpleRequest {
             }
         }
 
-        /*BufferedReader rd = new BufferedReader(
-                new InputStreamReader(response.getEntity().getContent()));
-
-        StringBuffer result = new StringBuffer();
-        String line = "";
-        while ((line = rd.readLine()) != null) {
-            result.append(line);
-        }
-        this.result = result.toString();
-        this.code = response.getStatusLine().getStatusCode();
-
-        try {
-            setResultjson(new JSONObject(result.toString()));
-            System.out.println("String JSON Compatible");
-        } catch (JSONException e){
-            setResultjson(null);
-            System.out.println("String NOT JSON Compatible");
-        }
-
-        return result.toString();*/
         return buildMyResponse(response);
     }
 
@@ -298,6 +294,28 @@ public class HttpSimpleRequest {
         HttpClient client = HttpClientBuilder.create().build();
 
         HttpPost request = new HttpPost();
+
+
+        if (this.files != null) {
+            MultipartEntityBuilder builderfile = MultipartEntityBuilder.create();
+            builderfile.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
+            for (String myfile: files){
+                final File file = new File(myfile);
+                FileBody fb = new FileBody(file);
+                builderfile.addPart(myfile, fb);
+                System.out.println("Adding file to upload: " + myfile);
+             }
+        }
+        /*
+        final File file = new File(fileName);
+        FileBody fb = new FileBody(file);
+
+        builderfile.addPart("file", fb);
+        builderfile.addTextBody("userName", userName);
+        builderfile.addTextBody("password", password);
+        builderfile.addTextBody("macAddress",  macAddress);
+        final HttpEntity yourEntity = builderfile.build();
+        */
 
         if (proxyhost != null) {
             request.setConfig(setMyProxy());

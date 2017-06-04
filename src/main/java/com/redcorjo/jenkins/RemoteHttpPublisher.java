@@ -9,11 +9,15 @@ import hudson.tasks.*;
 import hudson.util.FormValidation;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
+import org.apache.commons.io.filefilter.WildcardFileFilter;
+import org.apache.tools.ant.DirectoryScanner;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
 import javax.servlet.ServletException;
+import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 
 
@@ -25,20 +29,24 @@ public class RemoteHttpPublisher extends Notifier {
     private String password;
     private String method;
     private String url;
+    private String files;
     private boolean useheaders;
     private boolean useparameters;
     private boolean usecredentials;
     private boolean ignoreproxy;
+    private boolean uploadfiles;
 
       // Fields in config.jelly must match the parameter names in the "DataBoundConstructor"
     @DataBoundConstructor
-    public RemoteHttpPublisher(String parameters, String headers, String url, String method, String user, String password, Boolean useheaders, Boolean useparameters, Boolean usecredentials, Boolean ignoreproxy) {
+    public RemoteHttpPublisher(String parameters, String headers, String url, String method, String user, String password, String files,
+                               Boolean useheaders, Boolean useparameters, Boolean usecredentials, Boolean ignoreproxy, Boolean uploadfiles) {
 
         this.method = method;
         this.url = url;
         this.useheaders = useheaders;
         this.useparameters = useparameters;
         this.usecredentials = usecredentials;
+        this.uploadfiles = uploadfiles;
         this.ignoreproxy = ignoreproxy;
 
         if (useparameters) {
@@ -50,6 +58,10 @@ public class RemoteHttpPublisher extends Notifier {
         if ( usecredentials) {
             this.user = user;
             this.password = password;
+        }
+        if ( uploadfiles) {
+            this.files = files;
+            this.method = "POST";
         }
     }
 
@@ -77,7 +89,11 @@ public class RemoteHttpPublisher extends Notifier {
     }
 
     public String getMethod() {
-        return method;
+        if (uploadfiles) {
+            return "POST";
+        } else {
+            return method;
+        }
     }
 
     public boolean isUseheaders() {
@@ -100,6 +116,14 @@ public class RemoteHttpPublisher extends Notifier {
         this.ignoreproxy = ignoreproxy;
     }
 
+    public String getFiles() {
+        return files;
+    }
+
+    public boolean isUploadfiles() {
+        return uploadfiles;
+    }
+
     @Override
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) {
 
@@ -110,7 +134,8 @@ public class RemoteHttpPublisher extends Notifier {
             return true;
         }
 
-        String buildLog = build.getWorkspace() + "/" + build.number + "/log";
+        String myworkspace = String.valueOf(build.getWorkspace());
+        String buildLog = myworkspace + "/" + build.number + "/log";
         listener.getLogger().println("Build log is " + buildLog);
 
         Jenkins jenkins = Jenkins.getInstance();
@@ -136,6 +161,21 @@ public class RemoteHttpPublisher extends Notifier {
             myrequest.setCredentials(user,password);
         }
 
+        if (uploadfiles) {
+            DirectoryScanner scanner = new DirectoryScanner();
+            scanner.setIncludes(new String[]{files});
+            scanner.setBasedir(myworkspace);
+            scanner.setCaseSensitive(false);
+            scanner.scan();
+            String[] myfiles = scanner.getIncludedFiles();
+            myrequest.setFiles(myfiles);
+        }
+
+        /*
+        for (int i = 0; i < myfiles.length; i++) {
+            System.out.println(myfiles[i]);
+        }*/
+
         if ( method.equalsIgnoreCase("GET")) {
             myrequest.setMethod(myrequest.GET);
         } else if ( method.equalsIgnoreCase("POST")) {
@@ -147,12 +187,10 @@ public class RemoteHttpPublisher extends Notifier {
         } else {
             myrequest.setMethod(myrequest.GET);
         }
-        //myrequest.setNoProxyHost(jenkins.proxy.noProxyHost);
 
         try {
-            //myresult = myrequest.myRequest();
-            myrequest.myRequest();
-        } catch (IOException e) {
+             myrequest.myRequest();
+           } catch (IOException e) {
             e.printStackTrace();
         } catch (Exception e) {
             listener.getLogger().println("Generic exception when launching the request");
