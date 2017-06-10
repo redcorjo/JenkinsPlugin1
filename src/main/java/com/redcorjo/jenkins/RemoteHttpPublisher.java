@@ -36,10 +36,14 @@ public class RemoteHttpPublisher extends Notifier {
     private boolean ignoreproxy;
     private boolean uploadfiles;
 
+    private SharedAPIs myapis = new SharedAPIs();
+
       // Fields in config.jelly must match the parameter names in the "DataBoundConstructor"
     @DataBoundConstructor
     public RemoteHttpPublisher(String parameters, String headers, String url, String method, String user, String password, String files,
                                Boolean useheaders, Boolean useparameters, Boolean usecredentials, Boolean ignoreproxy, Boolean uploadfiles) {
+
+
 
         this.method = method;
         this.url = url;
@@ -63,6 +67,7 @@ public class RemoteHttpPublisher extends Notifier {
             this.files = files;
             this.method = "POST";
         }
+        myapis.logger("THIS IS A LOGGER MESSAGE");
     }
 
     public BuildStepMonitor getRequiredMonitorService() {
@@ -170,7 +175,7 @@ public class RemoteHttpPublisher extends Notifier {
             String[] mylist = scanner.getIncludedFiles();
             String[] myfiles = new String[mylist.length];
             for (int count = 0 ; count < mylist.length; count++) {
-                myfiles[0] = myworkspace + File.separator + mylist[0];
+                myfiles[count] = myworkspace + File.separator + mylist[count];
             }
             myrequest.setFiles(myfiles);
             //myrequest.setFiles(mylist);
@@ -178,7 +183,7 @@ public class RemoteHttpPublisher extends Notifier {
 
         /*
         for (int i = 0; i < myfiles.length; i++) {
-            System.out.println(myfiles[i]);
+            myapis.logger(myfiles[i]);
         }*/
 
         if ( method.equalsIgnoreCase("GET")) {
@@ -203,8 +208,8 @@ public class RemoteHttpPublisher extends Notifier {
         listener.getLogger().println(myrequest.getCode());
         listener.getLogger().println(myrequest.getResult());
         listener.getLogger().println(myrequest.getResultjson());
-        System.out.println("Myresult:" + myrequest.getResult());
-        System.out.println("Mycode:" + myrequest.getCode());
+        myapis.logger("Myresult:" + myrequest.getResult());
+        myapis.logger("Mycode:" + myrequest.getCode());
         if ( myrequest.getCode() == 0) {
             return false;
         } else {

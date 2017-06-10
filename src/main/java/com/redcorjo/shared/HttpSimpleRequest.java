@@ -34,6 +34,8 @@ import org.json.JSONObject;
 
 import static org.apache.http.HttpHeaders.USER_AGENT;
 
+import com.redcorjo.shared.SharedAPIs;
+
 
 // Intersting URL for testing http://www.jsontest.com
 /**
@@ -59,6 +61,8 @@ public class HttpSimpleRequest {
     public final int POST = 2;
     public final int PUT = 3;
     public final int DELETE = 4;
+
+    private SharedAPIs myapis = new SharedAPIs();
 
     public HttpSimpleRequest(){
         super();
@@ -154,7 +158,7 @@ public class HttpSimpleRequest {
             HttpHost proxy = new HttpHost(proxyhost, proxyport, "http");
             //RequestConfig config = RequestConfig.custom().setProxy(proxy).build();
             config = RequestConfig.custom().setProxy(proxy).build();
-            System.out.println("Using proxy: " + proxyhost + ":" + proxyport);
+            myapis.logger("Using proxy: " + proxyhost + ":" + proxyport);
             return config;
         }
         return config;
@@ -172,7 +176,7 @@ public class HttpSimpleRequest {
                 String myparam = (String) paramskeys.next();
                 String myvalue = myparams.getString(myparam);
                 builder.addParameter(myparam, myvalue);
-                System.out.println("Parameter " + myparam + ":" + myvalue);
+                myapis.logger("Parameter " + myparam + ":" + myvalue);
             }
         }
         return builder;
@@ -192,10 +196,10 @@ public class HttpSimpleRequest {
 
         try {
             setResultjson(new JSONObject(result.toString()));
-            System.out.println("String JSON Compatible");
+            myapis.logger("String JSON Compatible");
         } catch (JSONException e){
             setResultjson(null);
-            System.out.println("String NOT JSON Compatible");
+            myapis.logger("String NOT JSON Compatible");
         }
 
         return result.toString();
@@ -204,19 +208,19 @@ public class HttpSimpleRequest {
     public String myRequest() throws IOException{
 
         if ( getMethod() == this.GET) {
-            System.out.println("Using GET method");
+            myapis.logger("Using GET method");
             return myRequestGet();
         } else if ( getMethod() == this.POST) {
-            System.out.println("Using POST method");
+            myapis.logger("Using POST method");
             return myRequestPost();
         } else if ( getMethod() == this.PUT) {
-            System.out.println("Using PUT method");
+            myapis.logger("Using PUT method");
             return myRequestPut();
         } else if ( getMethod() == this.DELETE) {
-            System.out.println("Using DELETE method");
+            myapis.logger("Using DELETE method");
             return myRequestDelete();
         } else {
-            System.out.println("Using GET default method");
+            myapis.logger("Using GET default method");
             return myRequestGet();
         }
     }
@@ -244,7 +248,7 @@ public class HttpSimpleRequest {
             String myheader = (String)headerkeys.next();
             String myvalue = myheaders.getString(myheader);
             request.addHeader(myheader, myvalue);
-            System.out.println("Header "+myheader+":"+myvalue);
+            myapis.logger("Header "+myheader+":"+myvalue);
         }
 
 
@@ -254,7 +258,7 @@ public class HttpSimpleRequest {
         URI uri;
         try {
             uri = builder.build();
-            System.out.println("URL:" + uri.toString());
+            myapis.logger("URL:" + uri.toString());
         } catch (Exception e){
             this.code = 500;
             this.result = "";
@@ -310,7 +314,8 @@ public class HttpSimpleRequest {
             String myheader = (String)headerkeys.next();
             String myvalue = myheaders.getString(myheader);
             request.addHeader(myheader, myvalue);
-            System.out.println("Header "+myheader+":"+myvalue);
+            myapis.logger("Header "+myheader+":"+myvalue);
+            myapis.logger("Header "+myheader+":"+myvalue);
         }
 
         URIBuilder builder = setMyParameters();
@@ -318,7 +323,7 @@ public class HttpSimpleRequest {
         URI uri;
         try {
             uri = builder.build();
-            System.out.println("URL:" + uri.toString());
+            myapis.logger("URL:" + uri.toString());
         } catch (Exception e){
             this.code = 500;
             this.result = "";
@@ -371,7 +376,7 @@ public class HttpSimpleRequest {
                 final File file = new File(myfile);
                 FileBody fb = new FileBody(file);
                 builderfile.addPart(Paths.get(myfile).getFileName().toString(), fb);
-                System.out.println("Adding file to upload: " + myfile);
+                myapis.logger("Adding file to upload: " + myfile);
             }
         }
         return builderfile;
@@ -395,7 +400,7 @@ public class HttpSimpleRequest {
             String myheader = (String)headerkeys.next();
             String myvalue = myheaders.getString(myheader);
             request.addHeader(myheader, myvalue);
-            System.out.println("Header "+myheader+":"+myvalue);
+            myapis.logger("Header "+myheader+":"+myvalue);
         }
 
         URIBuilder builder = setMyParameters();
@@ -403,7 +408,7 @@ public class HttpSimpleRequest {
         URI uri;
         try {
             uri = builder.build();
-            System.out.println("URL:" + uri.toString());
+            myapis.logger("URL:" + uri.toString());
         } catch (Exception e){
             this.code = 500;
             this.result = "";
@@ -459,7 +464,7 @@ public class HttpSimpleRequest {
             String myheader = (String)headerkeys.next();
             String myvalue = myheaders.getString(myheader);
             request.addHeader(myheader, myvalue);
-            System.out.println("Header "+myheader+":"+myvalue);
+            myapis.logger("Header "+myheader+":"+myvalue);
         }
 
         URIBuilder builder = setMyParameters();
@@ -467,7 +472,7 @@ public class HttpSimpleRequest {
         URI uri;
         try {
             uri = builder.build();
-            System.out.println("URL:" + uri.toString());
+            myapis.logger("URL:" + uri.toString());
         } catch (Exception e){
             this.code = 500;
             this.result = "";
@@ -521,8 +526,9 @@ public class HttpSimpleRequest {
 
     public static void main(String[] args){
 
+        SharedAPIs myapis = new SharedAPIs();
         String myresult = null;
-        System.out.println("args = [" + args + "]");
+        myapis.logger("args = [" + args + "]");
         String myurl = "http://www.google.com/search?q=httpClient";
         //myurl = "http://ip.jsontest.com/";
         HttpSimpleRequest myrequest = new HttpSimpleRequest(myurl);
@@ -533,7 +539,7 @@ public class HttpSimpleRequest {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        System.out.println("Myresult:" + myrequest.getResult());
-        System.out.println("Mycode:" + myrequest.getCode());
+        myapis.logger("Myresult:" + myrequest.getResult());
+        myapis.logger("Mycode:" + myrequest.getCode());
     }
 }
