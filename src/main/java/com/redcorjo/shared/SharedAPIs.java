@@ -10,11 +10,11 @@ import org.apache.logging.log4j.Logger;
  */
 public class SharedAPIs {
 
-    Logger log;
+    //Logger log;
 
     public SharedAPIs(){
         System.setProperty("org.apache.logging.log4j.simplelog.StatusLogger.level","INFO");
-        log = LogManager.getLogger(SharedAPIs.class.getName());
+        //log = LogManager.getLogger(SharedAPIs.class.getName());
     }
 
     public static boolean checkJson(String value){
@@ -31,7 +31,7 @@ public class SharedAPIs {
     }
 
     public void logger(String severity, String message){
-        log.info("log4j2 : " + message);
+        //log.info("log4j2 : " + message);
         System.out.println("SYSOUT : [" + severity + "] "  + message);
     }
 }
