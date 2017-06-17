@@ -2,11 +2,13 @@ package com.redcorjo.shared;
 
 //import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.httpclient.NameValuePair;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -18,6 +20,7 @@ import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.impl.client.HttpClientBuilder;
 
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -27,8 +30,11 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
+import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -169,6 +175,9 @@ public class HttpSimpleRequest {
         URL myurl = new URL(url);
         URIBuilder builder = new URIBuilder();
         builder.setScheme(myurl.getProtocol()).setHost(myurl.getHost()).setPort(myurl.getPort()).setPath(myurl.getPath());
+        if ( getMethod() == this.POST) {
+            return builder;
+        }
         if (! parameters.isEmpty()) {
             JSONObject myparams = new JSONObject(parameters);
             Iterator<?> paramskeys = myparams.keys();
@@ -318,7 +327,19 @@ public class HttpSimpleRequest {
             myapis.logger("Header "+myheader+":"+myvalue);
         }
 
+        JSONObject myparameters = new JSONObject(parameters);
+        Iterator<?> parameterkeys = myparameters.keys();
+        List<BasicNameValuePair> postParameters = new ArrayList<>();
+        while (parameterkeys.hasNext()){
+            String myparameter = (String)parameterkeys.next();
+            String myvalue = myparameters.getString(myparameter);
+            postParameters.add(new BasicNameValuePair(myparameter, myvalue));
+
+        }
+        request.setEntity(new UrlEncodedFormEntity(postParameters));
+
         URIBuilder builder = setMyParameters();
+
 
         URI uri;
         try {
